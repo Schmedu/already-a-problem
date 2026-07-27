@@ -35,6 +35,16 @@ GERMAN_STOPWORDS = {
 
 ARTICLE_WORD_RE = re.compile(r"\b(a|an)\s+([a-zA-Z][a-zA-Z-]*)\b")
 
+# file paths / URLs - whitespace-delimited tokens containing a slash - aren't
+# prose, so strip them before any rule runs (e.g. ".../already-a-problem-
+# english-hook/..." was tripping the nationality-capitalization rule on the
+# "english" inside the directory name)
+PATH_LIKE_RE = re.compile(r"\S*/\S+")
+
+
+def strip_paths(text):
+    return PATH_LIKE_RE.sub(" ", text)
+
 MISTAKE_RULES = [
     (
         "adverb placement",
@@ -232,6 +242,7 @@ def main():
         return
     if is_mostly_german(text):
         return
+    text = strip_paths(text)
 
     mistakes, praises = [], []
     for name, pattern, tip in MISTAKE_RULES:
